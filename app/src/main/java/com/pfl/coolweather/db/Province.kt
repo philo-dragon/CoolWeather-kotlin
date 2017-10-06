@@ -9,6 +9,6 @@ import org.litepal.crud.DataSupport
 class Province : DataSupport() {
 
     var id: Int = 0
-    var provinceName: String? = null
-    var privinceCode: String? = null
+    var provinceCode: Int = 0
+    var name: String? = null
 }
