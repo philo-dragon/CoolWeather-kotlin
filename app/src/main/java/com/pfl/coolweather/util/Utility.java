@@ -2,10 +2,13 @@ package com.pfl.coolweather.util;
 
 import android.text.TextUtils;
 
+import com.google.gson.Gson;
 import com.pfl.coolweather.db.City;
 import com.pfl.coolweather.db.County;
 import com.pfl.coolweather.db.Province;
+import com.pfl.coolweather.db.Weather;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -105,4 +108,25 @@ public class Utility {
         return false;
     }
 
+    /**
+     * 将返回的 JSON 数据解析成 Weather 实体类
+     *
+     * @param weatherString
+     * @return
+     */
+    @NotNull
+    public static Weather handleWeatherResponse(@NotNull String weatherString) {
+
+        try {
+            JSONObject jsonObject = new JSONObject(weatherString);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather");
+            String weatherContent = jsonArray.getJSONObject(0).toString();
+            return new Gson().fromJson(weatherContent, Weather.class);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }
