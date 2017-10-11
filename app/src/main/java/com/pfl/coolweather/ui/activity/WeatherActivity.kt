@@ -51,7 +51,7 @@ class WeatherActivity : AppCompatActivity() {
         var weatherId: String?
 
         if (null != weatherString) {
-            var weatehr: Weather = Utility.handleWeatherResponse(weatherString)
+            var weatehr: Weather = Utility.handleWeatherResponse(weatherString)!!
             weatherId = weatehr.basic!!.id
             showWeatherInfo(weatehr)
         } else {
@@ -97,7 +97,7 @@ class WeatherActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call?, response: Response?) {
                 var responstText = response?.body()?.string()
-                var weather: Weather = Utility.handleWeatherResponse(responstText!!)
+                var weather: Weather = Utility.handleWeatherResponse(responstText!!)!!
                 runOnUiThread(object : Runnable {
                     override fun run() {
                         if (null != weather && "ok".equals(weather.status)) {

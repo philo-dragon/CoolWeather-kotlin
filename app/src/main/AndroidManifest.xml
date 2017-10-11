@@ -20,7 +20,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.activity.WeatherActivity" />
-        <activity android:name=".ui.activity.TestActivity" />
 
         <service
             android:name=".service.AutoUpdateService"
