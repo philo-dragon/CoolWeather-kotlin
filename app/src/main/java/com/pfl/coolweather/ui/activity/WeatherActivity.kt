@@ -1,5 +1,6 @@
 package com.pfl.coolweather.ui.activity
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -15,6 +16,7 @@ import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.pfl.coolweather.R
 import com.pfl.coolweather.db.Weather
+import com.pfl.coolweather.service.AutoUpdateService
 import com.pfl.coolweather.util.HttpUtil
 import com.pfl.coolweather.util.Utility
 import kotlinx.android.synthetic.main.activity_weather.*
@@ -161,26 +163,36 @@ class WeatherActivity : AppCompatActivity() {
 
     private fun showWeatherInfo(weatehr: Weather) {
 
-        tv_city.text = weatehr.basic!!.city
-        tv_update_time.text = weatehr.basic!!.update!!.loc!!.split(" ")[1]
-        tv_degree.text = weatehr.now!!.tmp + "℃"
-        tv_wetherinfo.text = weatehr.now!!.cond!!.txt
-        ll_forecast.removeAllViews()
-        weatehr.daily_forecast!!.forEach {
-            var view = getLayoutInflater().inflate(R.layout.item_forecast, ll_forecast, false)
-            view.findViewById<TextView>(R.id.tv_date).text = it.date
-            view.findViewById<TextView>(R.id.tv_info).text = it.cond!!.txt_n
-            view.findViewById<TextView>(R.id.tv_max).text = it.tmp!!.max
-            view.findViewById<TextView>(R.id.tv_min).text = it.tmp!!.min
+        if (weatehr != null && "ok".equals(weatehr.status)) {
 
-            ll_forecast.addView(view)
+            tv_city.text = weatehr.basic!!.city
+            tv_update_time.text = weatehr.basic!!.update!!.loc!!.split(" ")[1]
+            tv_degree.text = weatehr.now!!.tmp + "℃"
+            tv_wetherinfo.text = weatehr.now!!.cond!!.txt
+            ll_forecast.removeAllViews()
+            weatehr.daily_forecast!!.forEach {
+                var view = getLayoutInflater().inflate(R.layout.item_forecast, ll_forecast, false)
+                view.findViewById<TextView>(R.id.tv_date).text = it.date
+                view.findViewById<TextView>(R.id.tv_info).text = it.cond!!.txt_n
+                view.findViewById<TextView>(R.id.tv_max).text = it.tmp!!.max
+                view.findViewById<TextView>(R.id.tv_min).text = it.tmp!!.min
+
+                ll_forecast.addView(view)
+            }
+
+            tv_aqi.text = weatehr.aqi!!.city!!.aqi
+            tv_pm25.text = weatehr.aqi!!.city!!.pm25
+            tv_comfort.text = "舒适度: " + weatehr.suggestion!!.comf!!.txt
+            tv_car_wash.text = "洗车指数: " + weatehr.suggestion!!.cw!!.txt
+            tv_sport.text = "运动建议: " + weatehr.suggestion!!.sport!!.txt
+            sv_weather.visibility = View.VISIBLE
+
+
+            // 开启定时任务
+            var intent = Intent(this@WeatherActivity, AutoUpdateService::class.java)
+            startService(intent)
+        } else {
+            Toast.makeText(this@WeatherActivity, "获取天气信息失败", Toast.LENGTH_SHORT).show()
         }
-
-        tv_aqi.text = weatehr.aqi!!.city!!.aqi
-        tv_pm25.text = weatehr.aqi!!.city!!.pm25
-        tv_comfort.text = "舒适度: " + weatehr.suggestion!!.comf!!.txt
-        tv_car_wash.text = "洗车指数: " + weatehr.suggestion!!.cw!!.txt
-        tv_sport.text = "运动建议: " + weatehr.suggestion!!.sport!!.txt
-        sv_weather.visibility = View.VISIBLE
     }
 }
