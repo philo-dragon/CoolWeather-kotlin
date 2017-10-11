@@ -4,7 +4,11 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.support.v4.view.GravityCompat
+import android.support.v4.widget.DrawerLayout
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
+import android.view.Gravity
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -42,11 +46,14 @@ class WeatherActivity : AppCompatActivity() {
         var weatherString: String? = prefs.getString("weather", null)
         var bingPic: String? = prefs.getString("bing_pic", null)
 
+        var weatherId: String?
+
         if (null != weatherString) {
             var weatehr: Weather = Utility.handleWeatherResponse(weatherString)
+            weatherId = weatehr.basic!!.id
             showWeatherInfo(weatehr)
         } else {
-            var weatherId: String? = intent.getStringExtra("weather_id")
+            weatherId = intent.getStringExtra("weather_id")
             sv_weather.visibility = View.INVISIBLE
             requestWeather(weatherId)
         }
@@ -55,12 +62,33 @@ class WeatherActivity : AppCompatActivity() {
         } else {
             loadBingPic()
         }
+
+
+        //为SwipeRefreshLayout设置刷新时的颜色变化，最多可以设置4种
+        swipefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light)
+
+        swipefreshLayout.setOnRefreshListener { requestWeather(weatherId) }
+        tv_nev.setOnClickListener { drawerLayout.openDrawer(GravityCompat.START) }
+
+    }
+
+    fun getDrawerLayout(): DrawerLayout {
+
+        return drawerLayout
+    }
+
+    fun getSwipefreshLayout(): SwipeRefreshLayout {
+
+        return swipefreshLayout
     }
 
     /**
      * 根据天气id 请求城市天气信息
      */
-    private fun requestWeather(weatherId: String?) {
+    fun requestWeather(weatherId: String?) {
 
         var weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=0dff9c2f64ca467088a0853001b26d4d"
         HttpUtil.sendOkHttpRequest(weatherUrl, object : Callback {
@@ -70,7 +98,6 @@ class WeatherActivity : AppCompatActivity() {
                 var weather: Weather = Utility.handleWeatherResponse(responstText!!)
                 runOnUiThread(object : Runnable {
                     override fun run() {
-
                         if (null != weather && "ok".equals(weather.status)) {
                             var editor = PreferenceManager.getDefaultSharedPreferences(this@WeatherActivity).edit()
                             editor.putString("weather", responstText)
@@ -80,6 +107,7 @@ class WeatherActivity : AppCompatActivity() {
                             Toast.makeText(this@WeatherActivity, "获取天气信息失败", Toast.LENGTH_SHORT).show()
                         }
 
+                        swipefreshLayout.isRefreshing = false
                     }
                 })
             }
@@ -88,6 +116,7 @@ class WeatherActivity : AppCompatActivity() {
                 runOnUiThread(object : Runnable {
                     override fun run() {
                         Toast.makeText(this@WeatherActivity, "获取天气信息失败", Toast.LENGTH_SHORT).show()
+                        swipefreshLayout.isRefreshing = false
                     }
                 })
             }
